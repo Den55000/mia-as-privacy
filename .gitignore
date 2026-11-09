@@ -1,0 +1,14 @@
+.venv/
+data/
+__pycache__/
+.ipynb_checkpoints/
+*.pkl
+*.pth
+*.pt
+
+# Third-party files kept locally but not published (no permission to redistribute)
+docs/Membership-Inference-Attacks-as-Privacy-Tools.pdf
+report-template.zip
+report/report-template.*
+report/figures/privacy-screen.jpg
+report/wissensch_Redlichkeit_E_09-2023.pdf

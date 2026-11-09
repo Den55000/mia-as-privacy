@@ -1,0 +1,168 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage[margin=3cm]{geometry}
+\usepackage[english]{babel}
+\usepackage[round,authoryear]{natbib}
+\usepackage[hyphens]{url}
+\usepackage{booktabs}
+\usepackage{tabularx}
+% Section, figure and table numbers of the report are read from report.aux (compile report.tex first).
+\usepackage{xr}
+\externaldocument{report}
+
+% A prompt, typeset verbatim-looking.
+\newcommand{\prompt}[1]{{\raggedright\small\ttfamily\frenchspacing #1\par}}
+
+% Keep anonymous for the peer review.
+\author{Anonymous (for peer review)}
+\title{Supplementary Material: Use of Generative AI Tools\\[0.3em]\large for the report ``Can We Trust Membership Inference Attacks to Measure Privacy?''}
+\date{30 October 2026}
+
+\begin{document}
+\sloppy
+\maketitle
+\appendix
+\renewcommand{\thetable}{A.\arabic{table}}
+
+\section{Use of generative AI tools in detail}
+\label{app:prompts}
+
+This document declares the use of AI tools for the report following the guidance on AI in Computer Science teaching of the Department of Mathematics and Computer Science (DMI) of the University of Basel.
+All section, figure and table numbers without the prefix ``A'' refer to the report.
+
+\subsection{Tools and their use}
+\label{app:tools}
+
+\begin{itemize}
+  \item \textbf{Claude Code} (Anthropic), an AI coding and writing assistant, with the model Claude Opus~5.5 (\texttt{claude-opus-5-5}). I used it on 23~October~2026 for the code, the test run and the reproduction plan, and on 30~October~2026 for this report.
+  \item \textbf{Consensus} (consensus.app), an AI-based literature search engine, used once on 30~October~2026 (Appendix~\ref{app:consensus}).
+  \item \textbf{ChatGPT} (OpenAI), with the model GPT-6 Thinking, used once on 30~October~2026 to review the finished draft (Appendix~\ref{app:chatgpt}).
+\end{itemize}
+Table~\ref{tab:ai-use} lists what the tools were used for.
+
+\begin{table}[!htb]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabularx}{\textwidth}{@{}p{3.3cm} X@{}}
+    \toprule
+    Content & How AI was used \\
+    \midrule
+    Summaries of sources (Sections~\ref{sec:background}, \ref{sec:findings} and~\ref{sec:relwork}) &
+      Claude Code drafted these sections from the paper by \citet{wang2025mia}, the cited attack papers and, for Section~\ref{sec:relwork}, the Consensus results (Appendix~\ref{app:consensus}). I chose the related work. Claude Code checked every cited source against its original publication, and I checked the claims about \citet{wang2025mia} against the paper. \\
+    Other text (Sections~\ref{sec:intro}, \ref{sec:reproduction} and~\ref{sec:conclusion}, abstract) &
+      Claude Code drafted the text from my notes and instructions; I reviewed and revised it. \\
+    Figures~\ref{fig:pipeline}, \ref{fig:loss-vs-lira} and~\ref{fig:ensemble}; all tables &
+      Claude Code wrote the \LaTeX{} code from my description. Figures~\ref{fig:paper-venn}, \ref{fig:paper-consistency}, \ref{fig:paper-jaccard}, \ref{fig:paper-factors} and~\ref{fig:paper-roc} are cropped unchanged from the paper. \\
+    Source code &
+      Claude Code generated all of my changes to the authors' code (about 120 changed lines, Table~\ref{tab:fixes}) and the two new test scripts (\texttt{smoke\_test.sh}, \texttt{check\_preds.py}). The generated parts are marked in the source code. The attack implementations are the authors' original code. \\
+    Code analysis and plan &
+      Claude Code found the two bugs in Section~\ref{subsec:issues} while preparing the test run, and I verified both. It drafted the experiment plan and compute budget from my goals and my supervisor's constraints. \\
+    Quality control &
+      ChatGPT reviewed the finished draft (Appendix~\ref{app:chatgpt}). Claude Code checked each point of the review against the paper and the authors' code, and I adopted only corrections of actual errors. \\
+    \bottomrule
+  \end{tabularx}
+  \caption{Use of generative AI tools in this report.}
+  \label{tab:ai-use}
+\end{table}
+
+\subsection{Literature search with Consensus}
+\label{app:consensus}
+
+A separate Claude agent (Claude Code, Claude Opus~5.5) ran one search in my Consensus account, through a browser session in which I had logged in. These are all prompts I gave this agent, verbatim and in order:
+\begin{enumerate}
+  \item \prompt{Could you use consensus on my behalf to find related for paper? If you could start an interactive browser session I would be able to login for you}
+  \item \prompt{Try the browser again}
+\end{enumerate}
+The agent formulated the following query itself and entered it in Consensus (Consensus Pro, deep search, 30~October~2026):
+\prompt{How reliable and consistent are membership inference attacks as privacy evaluation tools (auditing, unlearning verification, defense evaluation), and do different attacks or random instances detect different members? Include work on ensembles/combining membership inference attacks, per-sample vulnerability, and variance of attack results.}
+Consensus generated four sub-queries itself (on MIAs for auditing, unlearning verification and defense evaluation; on ensembles and combinations of MIAs; and on per-sample vulnerability), then read abstracts and full texts of 103 eligible papers.
+It returned a written summary and a list of 20 papers.
+From this list I chose the works discussed in Section~\ref{sec:relwork}: \citet{niu2025comparing}, \citet{jebreel2026revisiting}, \citet{hayes2024inexact}, \citet{jagielski2023combine}, \citet{ward2025ensembling} and \citet{hu2022survey}.
+Six further papers on the list were already cited for other reasons: \citet{wang2025mia} and the attack papers \citet{shokri2017membership}, \citet{carlini2022membership}, \citet{choquette2021label}, \citet{ye2022enhanced} and \citet{liu2022membership}.
+I did not use the remaining papers or the text of the Consensus summary, and I checked every cited paper against its original publication.
+The complete search log, including the Consensus output, is available on request.
+
+\subsection{Quality control with ChatGPT}
+\label{app:chatgpt}
+
+After the draft was finished, I asked ChatGPT (GPT-6 Thinking) to review it, with the PDF of the report attached.
+This was my only prompt:
+\begin{enumerate}
+  \item \prompt{could you do quality control on this paper?}
+\end{enumerate}
+The full conversation, including the review, is shared at \url{https://chatgpt.com/share/6ae4d883-6398-83ed-a2ee-e2870ad139a4}.
+I passed the review to Claude Code (Appendix~\ref{app:prompts-report}), which checked every point against the paper, its extended version and the authors' code.
+The following points were actual errors and were corrected: the claim that a low FPR alone makes the flagged points almost all members (Section~\ref{subsec:metrics}); the composition of LiRA's shadow training data and the statistic LiRA uses (Section~\ref{subsec:attacks}); the percentage 14.6\% for Figure~\ref{fig:paper-venn}; the compute time of about six days (Section~\ref{subsec:budget}); and the interpretation of the smoke test (Section~\ref{subsec:smoke}).
+I also added the paper's explanation of how the ensemble is evaluated at a fixed FPR (Section~\ref{subsec:ensemble}).
+I did not adopt suggestions that only concerned style, the level of mathematical detail or the scope of the report.
+
+\subsection{Prompts}
+\label{app:prompt-list}
+
+The DMI guidance requires all prompts to be listed when AI tools summarize sources.
+This section lists all prompts I gave Claude Code for the report, the code and the plan, verbatim and in order, in two parts: the prompts for writing this report (Appendix~\ref{app:prompts-report}) and the prompts for the code, the test run and the reproduction plan (Appendix~\ref{app:prompts-code}).
+Prompts that only contained pasted material are described in brackets.
+
+\subsubsection{Prompts for the report (30 October 2026)}
+\label{app:prompts-report}
+After each prompt, the assistant drafted or revised the corresponding parts of the report.
+
+\begin{enumerate}
+  \item \prompt{what is already done for this project?}
+  \item \prompt{Could you help me write a short report on this paper, a \textquotedbl{}for dummies\textquotedbl{} version of it? So what I undestood, how I plan to implement it, a bit of motivation behind why this matters. To write the initial draft I want to go though it with me section by section so I can guide you on what I want the paper to be. As the first step, could you create a skeleton in LaTeX? The is aleady a template zip in the room directory}
+  \item \prompt{My target audience are peer reviewers, other bachelor computer science students in 5/6 semester, so some knowledge it expected, but not necessarily and in-depth understading of MIAs. Supervisors will also read it but they are not the focus. For the motivation, what I would use: \textquotedbl{}In 2023, researchers spent about \$200 querying ChatGPT and got back over ten thousand pieces of its training data, including real people's contact details. Models remember.\textquotedbl{} (\url{https://huggingface.co/papers/2311.17035.md} ; \url{https://dropbox.tech/machine-learning/bye-bye-bye-evolution-of-repeated-token-attacks-on-chatgpt-models}); \textquotedbl{}Now imagine a model trained on records from an HIV clinic or an oncology ward. An attacker doesn't need to extract your file. They only need to answer one question: were you in the training set? Because if you were, they know your diagnosis.\textquotedbl{} (Hypothetical) ; \textquotedbl{}This isn't hypothetical. In 2008, a statistical version of exactly this attack made the NIH pull genomic study data from public access almost overnight.\textquotedbl{} (\url{https://azbioscientist.blogspot.com/2008/08/forensic-breakthrough-stirs-nih-to.html}). But make this less dramatic and more scientific, I wrote this for the presentation where the hook really matters. Then pivot to the paper with something like \textquotedbl{}So we use these attacks as tools to measure that risk. But the attacks don't agree with each other, and that's what this paper is about.\textquotedbl{} Dont be afraid to write stuff or make changes, this is meant to be an initial draft.}
+  \item \prompt{Definitely start with an analogy, your student one will work well. But make sure the example implied a bit of malice. E.g. if the teacher \textquotedbl{}accentally\textquotedbl{} leaks the exam, he could check which student were dishonest and read the \textquotedbl{}leaked\textquotedbl{} paper if they answer the question what were in the \textquotedbl{}leaked\textquotedbl{} paper better than the other non-leaked questions. For the seven attack the table works better, I would like to generally break up walls of text with other visual elements. You can add extra info to LOSS and LiRA as well. For the math, keep the necessary questions but keep in mind that the reader is likely to skim over them so dont rely on heavy math too much.}
+  \item \prompt{For section 3, to avoid accidentally misrepreseting the paper I think i would be best to copy over the diagrams for the paper instead of redrawin them if possible. You can put the numbers from the paper but focus on your own qualitave analysis that focuses on proving understading rather than solid evidence. You can have a short \textquotedbl{}What this means for privcy in practice\textquotedbl{} section and just loop on it again in the conclusion. This is in a way the main question of the paper so there is no harm in repeating it a few times.}
+  \item \prompt{No hard page limit. Expected lenght \textasciitilde{}10-12 pages. Dont worry about it now, I will shorted the report later if needed. Section 4 is important. Describe the augmentation bugs in detail, a small cod snipper would be perfect. Show the smoke test results, they show that reproducing the paper is possible and that i am on track to do it. Would be great if you reference the paper thoughout.}
+  \item \prompt{For the 3 hours, if this without or with the 2 hours suspention? I had to pause the smoke test at some point and continue it later, it should be written somewhere}
+  \item \prompt{yes, do that after youre done I will give you the related work}
+  \item \prompt{I ran a different agent using consesus AI and this is what it gathered:}
+  followed by the list of related papers returned by Consensus for the query in Appendix~\ref{app:consensus}, pasted unchanged.
+  \item \prompt{You can move onto the conclusion. Loop back on \textquotedbl{}what this means for privacy in practive\textquotedbl{}, state the open question I aim to answer with my reproduction, and a short refresher for the reader on the most important information. \textquotedbl{}If you leave remembering only one thing for this paper it should be this\textquotedbl{} - this should be the feeling of the conclusion but dont write that outright.}
+  \item \prompt{Unfortunately I cant add the AI declaration directly to the paper because it goes to a blind peer review and I have to sign it with my name, but I still want to add a disclaimer in which way AI was used. Could you draft that?}
+  \item \prompt{could you make sure all of these guide line are followed?}
+  followed by the seminar's integrity, structure and style guidelines, pasted unchanged.
+  \item \prompt{add the date for consesus as today with this query How reliable and consistent are membership inference attacks as privacy evaluation tools (auditing, unlearning verification, defense evaluation), and do different attacks or random instances detect different members? Include work on ensembles/combining membership inference attacks, per-sample vulnerability, and variance of attack results.}
+  \item \prompt{Which font did you use, what is the spacing?}
+  \item \prompt{are the promts used for the coding part in the report?}
+  \item \prompt{Add them as well please}
+  \item \prompt{/home/admin/Downloads/AI Use Declaration -- Consensus Search Log.md this is the consesus log. After youve added all the necessary I want to make the AI declaration less \textquotedbl{}in your face\textquotedbl{} to allwo the reader to acutally focus on the paper. Could you move the \textquotedbl{}Use of generative digital tools\textquotedbl{} to after the conclusion and make this a short sentence about the genral use of AI ponting to the prompts if the reader what to know what exacly I asked of the AI \textquotedbl{}I decided the scope, structure, audience and key messages of the report, wrote the motivating examples in the introduction as short notes, chose the leaked-exam analogy from the assistant's suggestions and added the idea of a deliberate trap, and guided the drafting section by section. Appendix A lists all prompts I gave, both for the report and for the code and the reproduction plan. I checked all generated content against the original sources and take full responsibility for the result, including any errors.\textquotedbl{}. The goal is to allow the readers to think about the topic of the paper while remaining 100\% transparent}
+  \item \prompt{prompts to the AI for the consensus search Could you use consensus on my behalf to find related for paper? If you could start an interactive browser session I would be able to login for you Try the browser again}
+  \item \prompt{what is this in the end \textquotedbl{}r, without further text.\textquotedbl{} The formatting looks broken}
+  \item \prompt{some of the numbers in front of the prompts overlap}
+  \item \prompt{the soft page limit if 12 pages. Would it be possible to make the report shorter without significantly compromising on quality?}
+  \item \prompt{It covers only the main text. Do not remove figures, they are necessary to make the paper more pleasant to read. The rest you can implement. Do not use jargon on comlicated language to shorten text. Its ok if you still remain over 12 pages. Remove the AI-use markings, e.g. \textquotedbl{}[AI-assisted summary of sources ends.]\textquotedbl{} The appendix is enough for tranparency and having \textquotedbl{}AI Assistance\textquotedbl{} in the middle of the text can distract you from the paper, and I wouldn't want that to happen, the topic is already heavy enough.}
+  \item \prompt{Could you double-check that all the sources and their related info is correct?}
+  \item \prompt{I used  different LLM for queality control. Could you fix important issues mentioned? Importnatly you dont have to change things like the style of focusing more on understaning even if the other llm marked math as \textquotedbl{}need corrections\textquotedbl{}. only correct actually error and check that the other model did not hallucinate anything.}
+  followed by the review by ChatGPT (Appendix~\ref{app:chatgpt}), pasted unchanged.
+  \item \prompt{Could you separate the appedix from the paper I will host it on OSF and link to it in the paper? make sure the AI promt in the appndix are up to date and add this one \url{https://chatgpt.com/share/6ae4d883-6398-83ed-a2ee-e2870ad139a4}}
+\end{enumerate}
+
+\subsubsection{Prompts for the code, the test run and the plan (23 October 2026)}
+\label{app:prompts-code}
+In this session, Claude Code wrote the reproduction plan and compute budget, set up the software environment, prepared the code for the test run and wrote the code changes in Table~\ref{tab:fixes}. It found the two bugs in the Augmentation attack while preparing the test run.
+
+\begin{enumerate}
+  \item \prompt{in the docs folder you will find the pdf that contains the paper I need to review. For that I need to get the code to runs and run it myself so i can properly analyse it. Could you make a step by step plan that will help me bith understand the topic and recreate the experiment? Save in in docs/PLAN.md}
+  \item \prompt{I can get the necessary GPUs from my university. What exacty will I need to recreate the experiment?}
+  \item \prompt{I see the researchers used nvidia L40S GPUs on a typical job, but how many CPU cores and RAM?}
+  \item \prompt{where does the 200GB scratch memory cfigure come from? Is scratch memory just a hard drive or something specific?}
+  \item \prompt{are these all Nvidia GPU models?  V100, A100, L40S or H100 is fine.}
+  \item \prompt{I want to make this project a git repo, but I also need to get the code from here: \url{https://github.com/RPI-DSPlab/mia-disparity.git}. I dont want to mess something up by having embedded git repos. What would be the best approach in this situation?}
+  \item \prompt{could you set up the environment? (B2 in the plan)}
+  \item \prompt{I talked to my supervisor and they said I should just recreate the full paper. i am going to use sciCORE. Specfically Batch Computing (SLURM). \url{https://docs.scicore.unibas.ch/HPC\%20Cluster/batchcomputing/}. For that I really need to know how many jobs i need to run on which machine and for how long. The only think I can cut back on in the numver of of shadow models (e.g. do 1, 3, 7, and 13 instread of all of them). Could do write that down in the plan, and help me write an email to my supervisor explaining exactly what I need?}
+  \item \prompt{could you prepare the code for a smoke test?}
+  \item \prompt{I had to close the laptop, could you check if the shell process is ok?}
+  \item \prompt{my laptop blacked out, had to restart. Did everything finish?}
+  \item \prompt{continue (i disabled the process causing the crashes)}
+  \item \prompt{my CPU temp seems quite high, is it still just cooling off or is the process demaning}
+  \item {[Pasted system information about the laptop's USB4 controller, without further text.]}
+\end{enumerate}
+
+\bibliographystyle{apalike}
+\bibliography{references}
+
+\end{document}
