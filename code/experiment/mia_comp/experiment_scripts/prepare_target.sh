@@ -12,6 +12,8 @@
 #   SHUFFLE_SEED  1 for the main run; 2-4 for the repeated partitions (default: 1)
 #   EXP_NAME      experiment folder under DATA_DIR (default: miae_standard_exp)
 #   EPOCHS        override the per-dataset epoch count (smoke tests only)
+#   TARGET_BATCH_SIZE  batch size for target-model training (default: 512, the authors' setting;
+#                 their LiRA shadow models train at 128, see REPRO_LOG.md 2026-11-10)
 set -euo pipefail
 
 # PyTorch >= 2.6 refuses torch.load of whole objects by default; the attack code needs it.
@@ -74,6 +76,7 @@ for dataset in "${datasets[@]}"; do
       fi
       python3 obtain_pred.py --train_target_model "True" --dataset "$dataset" --target_model "$arch" \
        --seed "$seed" --delete-files "True" --data_aug "True"  --target_model_path "$target_model_save_path" \
-       --attack_epochs "$num_epoch" --target_epochs "$num_epoch" --data_path "$data_dir" --shuffle_seed "$shuffle_seed"
+       --attack_epochs "$num_epoch" --target_epochs "$num_epoch" --data_path "$data_dir" --shuffle_seed "$shuffle_seed" \
+       --batch_size "${TARGET_BATCH_SIZE:-512}"
     done
 done

@@ -54,3 +54,23 @@ Results (`check_preds.py`): all attacks give shape (30000,), AUC 0.498–0.503, 
 Notes:
 - `timed` in `smoke_test.sh` measures wall-clock time, so suspends are counted. Disable suspend (or use `systemd-inhibit`) for long runs.
 - `run.log` was overwritten by the restart, so the console output of the first attempt is lost. Append (`>>`) or use one log per attempt next time.
+
+## 2026-11-09/10: sciCORE pilot and follow-up checks
+
+Pilot (PLAN.md D5): CIFAR-10/ResNet-56 seed 0, all 7 attacks, on L40S and A100, plus a 6 h CIFAR-100/WRN-32-4 LiRA probe; ~22.5 GPU-hours including four follow-up jobs. AUCs within 0.02 of Table 1. One seed set took 5.5 h (L40S) / 9.3 h (A100), against 11.7 h estimated. Full write-up: the "sciCORE Pilot Report" doc.
+
+Findings:
+- **Data loading is the bottleneck.** GPU use 11–30%, about one CPU core busy. LiRA's shadow-model `DataLoader`s (`miae/attacks/lira_mia.py`) have no `num_workers`, so loading and augmentation run in the main process. Benchmark (`slurm/bench_shadow.sbatch`, 2 shadow models per setting, same node): 11.2 → 4.9 min per shadow model on L40S, 20.7 → 9.4 min on A100 with 8 workers. Shadow-model accuracy unchanged (99.5–99.6% train, 88.7–88.8% test).
+- **Batch-size mismatch between target and shadow models.** `obtain_pred.py` trains the target at `--batch_size` 512; LiRA reads `shadow_batchsize` (default 128) and ignores the `batch_size` it is passed. The paper (App. A.1) says target and shadow models are trained the same way and gives no batch size. Effect: CIFAR-100/WRN-32-4 target at 512 reached 67% train / 40% test accuracy (clean images), at 128 it reached 98% / 54% (`slurm/eval_target.sbatch`, `slurm/retrain_target.sbatch`). CIFAR-10/ResNet-56 at 512 is fine (96% / 80%) and matches the paper's AUCs.
+
+## Code changes for the main run (approved by the supervisors 2026-11-10)
+
+| File | Change | Affects results? |
+|---|---|---|
+| `miae/attacks/lira_mia.py`, `obtain_pred.py`, `experiment_scripts/obtain_pred.sh` | Optional data-loader workers for LiRA shadow-model training (`SHADOW_WORKERS` → `--shadow_num_workers` → `num_workers`, default 0 = authors' behaviour). Main run uses 8 | Not the method; the augmentation random streams differ, so results are not bit-identical. Consistency checked in stage 1 (`compare_preds.py`: pilot seed 0 with 0 workers against seeds 0–5 with 8) |
+| `experiment_scripts/prepare_target.sh` | Optional `TARGET_BATCH_SIZE` (default 512 = authors' setting). Main run keeps 512; a controlled CIFAR-10 seed-0 run at 128 quantifies the effect | Only when set |
+| new: `experiment_scripts/prepare_cinic10.py` | Script version of `process_CINIC10.ipynb` (download + 3,000 images per class). Listings sorted before sampling, because `os.listdir` order is file-system dependent, so the authors' exact subset cannot be reproduced anyway | Which CINIC-10 images are used (unavoidable) |
+| new: `slurm/seedset.sbatch`, `slurm/submit_stage1.sh`, `slurm/stage_report.sh`, `experiment_scripts/compare_preds.py` | Stage-1 run: one array task per seed set, at most 3 GPU jobs at once (supervisors' request); removes incomplete LiRA shadow-model folders before a resubmitted task (fix #12) | No |
+| `slurm/pilot_report.sh` | Activates the venv, so `check_preds.py` prints | No |
+
+The main run (`miae_standard_exp`) reuses the pilot's CIFAR-10 data split and target model (`pilot_l40s`, same code and settings), so its seed 0 differs from the pilot's only in the loader workers.

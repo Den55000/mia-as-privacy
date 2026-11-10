@@ -251,12 +251,14 @@ def get_aux_info(args, device: str, num_classes: int) -> mia_base.AuxiliaryInfo:
             return lira_mia.LiraAuxiliaryInfo(
                 {'device': device, 'seed': args.seed, 'save_path': args.preparation_path, 'num_classes': num_classes,
                 'batch_size': args.batch_size, 'lr': 0.1, "num_shadow_models": 20, 'epochs': args.attack_epochs, 'log_path': args.result_path,
-                'shadow_path': args.lira_shadow_path, 'shadow_diff_init': True, "augmentation_query": n_augmentation, "online": True})
+                'shadow_path': args.lira_shadow_path, 'shadow_diff_init': True, "augmentation_query": n_augmentation, "online": True,
+                'num_workers': args.shadow_num_workers})  # num_workers added [AI-generated: Claude Code, Claude Opus 5.5, 2026-11-10]
         else:
             return lira_mia.LiraAuxiliaryInfo(
                 {'device': device, 'seed': args.seed, 'save_path': args.preparation_path, 'num_classes': num_classes,
                 'batch_size': args.batch_size, 'lr': 0.1, "num_shadow_models": 20, 'epochs': args.attack_epochs, 'log_path': args.result_path,
-                'shadow_path': args.lira_shadow_path, 'shadow_diff_init': True, "augmentation_query": n_augmentation, "online": False})
+                'shadow_path': args.lira_shadow_path, 'shadow_diff_init': True, "augmentation_query": n_augmentation, "online": False,
+                'num_workers': args.shadow_num_workers})  # num_workers added [AI-generated: Claude Code, Claude Opus 5.5, 2026-11-10]
 
     if args.attack == "reference":
         return reference_mia.ReferenceAuxiliaryInfo(
@@ -355,6 +357,8 @@ if __name__ == '__main__':
     parser.add_argument('--target_epochs', type=int, default=100, help='number of epochs for target model training')
     parser.add_argument('--batch_size', type=int, default=512, help='batch size')
     parser.add_argument('--num_workers', type=int, default=2, help='number of workers')
+    # [AI-generated: Claude Code, Claude Opus 5.5, 2026-11-10] data-loader workers for LiRA shadow-model training; 0 = authors' setting
+    parser.add_argument('--shadow_num_workers', type=int, default=0, help='data-loader workers for LiRA shadow-model training')
     parser.add_argument('--device', type=str, default='cuda', help='device to train the model')
     args = parser.parse_args()
 

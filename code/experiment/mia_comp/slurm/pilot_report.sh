@@ -2,6 +2,7 @@
 # [AI-generated: Claude Code, Claude Opus 5.5, 2026-11-09] Entire file.
 # Summarises the pilot (PLAN.md, D5 steps 3-4). Run from experiment/mia_comp/: bash slurm/pilot_report.sh
 DATA_DIR="${DATA_DIR:-$HOME/mia_data_NOBACKUP}"
+source ../../.venv/bin/activate   # for check_preds.py below (the login shell has no venv)
 ids=$(awk '{print $2}' slurm/pilot_jobs.txt | paste -sd,)
 
 echo "== SLURM accounting (Elapsed = wall time; MaxRSS -> --mem; TotalCPU/Elapsed -> cores used)"

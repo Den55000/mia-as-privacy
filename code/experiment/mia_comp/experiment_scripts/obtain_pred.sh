@@ -15,6 +15,8 @@
 #   PREP_ROOT  scratch space for temporary attack files (default: the preds folder;
 #              on SLURM use $TMPDIR)
 #   DEVICE     torch device (default: cuda:0)
+#   SHADOW_WORKERS  data-loader workers for LiRA shadow-model training (default: 0, the
+#              authors' setting; 8 is ~2.2x faster, see REPRO_LOG.md 2026-11-10)
 #   EPOCHS     override the per-dataset epoch count (smoke tests only)
 set -euo pipefail
 
@@ -102,7 +104,8 @@ for dataset in "${datasets[@]}"; do
             --data_path "$data_dir" \
             --device "$device" \
             --dataset_file_root="$data_dir" \
-            --lira_shadow_path "$lira_shadow_dir"
+            --lira_shadow_path "$lira_shadow_dir" \
+            --shadow_num_workers "${SHADOW_WORKERS:-0}"
 
             rm -r "$prepare_dir"
             echo "Finished $dataset $arch $mia ($(date))"

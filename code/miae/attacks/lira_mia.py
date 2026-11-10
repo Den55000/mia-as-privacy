@@ -55,6 +55,8 @@ class LiraAuxiliaryInfo(AuxiliaryInfo):
         self.epochs = config.get('epochs', 100)
         self.device = config.get('device', 'cuda' if torch.cuda.is_available() else 'cpu')
         self.batch_size = config.get('shadow_batchsize', 128)
+        # data-loader workers for shadow-model training; 0 = the authors' setting (loading in the main process). [AI-generated: Claude Code, Claude Opus 5.5, 2026-11-10]
+        self.num_workers = config.get('num_workers', 0)
 
         # Model saving and loading parameters
         self.save_path = config.get('save_path', None)
@@ -230,10 +232,15 @@ class LIRAUtil(MIAUtils):
             shadow_train_indices, shadow_out_indices = _split_data(dataset, expid, iteration_range, info.seed)
 
             # Create the data loaders for training and testing
+            # num_workers/pin_memory/persistent_workers added. [AI-generated: Claude Code, Claude Opus 5.5, 2026-11-10]
+            # getattr: reference_mia also calls this with its own AuxiliaryInfo, which has no num_workers
+            num_workers = getattr(info, 'num_workers', 0)
+            loader_kwargs = dict(num_workers=num_workers, pin_memory=num_workers > 0,
+                                 persistent_workers=num_workers > 0)
             shadow_train_loader = DataLoader(Subset(dataset, shadow_train_indices), batch_size=info.batch_size,
-                                             shuffle=True)
+                                             shuffle=True, **loader_kwargs)
             shadow_out_loader = DataLoader(Subset(dataset, shadow_out_indices), batch_size=info.batch_size,
-                                           shuffle=False)
+                                           shuffle=False, **loader_kwargs)
 
             curr_model = copy.deepcopy(model)
             curr_model.to(device)

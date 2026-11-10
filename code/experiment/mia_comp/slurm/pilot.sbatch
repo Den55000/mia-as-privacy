@@ -10,7 +10,6 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=10
 #SBATCH --mem=32G
-#SBATCH --tmp=20G
 #SBATCH --output=logs/%x_%j.out
 
 set -euo pipefail

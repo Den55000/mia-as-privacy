@@ -297,7 +297,7 @@ Cluster docs: https://docs.scicore.unibas.ch/HPC%20Cluster/batchcomputing/
 
 - These limits apply **per group as well as per user**. Lab mates using the same GPUs reduce your share.
 - Maximum walltime: 6 h (`*-6hours`), 24 h (`*-1day`), 7 days (`*-1week`, with fewer GPUs allowed). The default is 1 CPU and 1 GB RAM, so always request resources explicitly.
-- `$TMPDIR` is per-job local disk, deleted when the job ends (request space with `--tmp=`). Home is about 1 TB per group volume and backed up. Name heavy result folders `*_NOBACKUP`.
+- `$TMPDIR` is per-job local disk, deleted when the job ends (sciCORE rejects `--tmp=`, so its size cannot be requested). Home is about 1 TB per group volume and backed up. Name heavy result folders `*_NOBACKUP`.
 - The directory for `--output` logs must exist before you submit, or the job fails silently.
 
 ### D2. Cost model
@@ -356,7 +356,7 @@ LiRA shadow models can't be shared between counts. The code's data split depends
 
 ### D4. Per-job resources and walltimes
 
-All jobs request `--gres=gpu:1 --cpus-per-task=10 --mem=32G --tmp=20G`. Walltime is about 1.5× the estimate:
+All jobs request `--gres=gpu:1 --cpus-per-task=10 --mem=32G`. Walltime is about 1.5× the estimate:
 
 | Job type | ResNet-56 / VGG-16, CIFAR-10 or CINIC-10 | Worst case (WRN-32-4, CIFAR-100) | QoS |
 |---|---|---|---|
@@ -431,7 +431,6 @@ Items 14, 16 and 17 mean some results depend on **guessing the authors' setup**.
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=10
 #SBATCH --mem=32G
-#SBATCH --tmp=20G
 #SBATCH --time=1-00:00:00
 #SBATCH --array=1-216%24
 #SBATCH --output=logs/%x_%A_%a.out      # logs/ must exist before sbatch

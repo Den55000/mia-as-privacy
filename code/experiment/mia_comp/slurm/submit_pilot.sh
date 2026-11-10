@@ -18,7 +18,8 @@ jobs_file=slurm/pilot_jobs.txt
 submit() {  # submit <label> <sbatch args...>: prints the job ID and records it
   local label="$1"; shift
   local id
-  id=$(sbatch --parsable "$@" slurm/pilot.sbatch)
+  # set -e does not apply inside $(...), so stop explicitly; callers using $(submit ...) then stop too
+  id=$(sbatch --parsable "$@" slurm/pilot.sbatch) || { echo "sbatch failed for $label, stopping" >&2; exit 1; }
   echo "$label $id" >> "$jobs_file"
   echo "submitted $label: $id" >&2
   echo "$id"
