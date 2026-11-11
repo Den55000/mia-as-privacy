@@ -17,7 +17,7 @@ for exp in "$MAIN" "$BS128"; do
   [ -f "$exp/timings.log" ] || continue
   echo "-- $(basename "$exp")"
   # per seed set: total over all attacks
-  awk '/_attack_/ {split($4, a, "_attack_"); t[a[1]] += $5} END {for (k in t) printf "  %-26s %6.2f h\n", k, t[k]/3600}' "$exp/timings.log" | sort
+  awk '/_attack_/ {split($5, a, "_attack_"); t[a[1]] += $6} END {for (k in t) printf "  %-26s %6.2f h\n", k, t[k]/3600}' "$exp/timings.log" | sort
   for f in "$exp"/gpu_*.csv; do
     [ -f "$f" ] && awk -F', ' 'NR>1 {u+=$2; if ($3+0>m) m=$3+0; n++} END {if (n) printf "  %s: mean GPU util %.0f%%, peak mem %d MiB\n", FILENAME, u/n, m}' "$f"
   done
