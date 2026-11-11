@@ -37,7 +37,10 @@ for d in "$shadow_dir"/*/; do
   if [ -d "$d" ] && [ ! -f "$d/shadow.pth" ]; then echo "removing incomplete shadow model $d"; rm -r "$d"; fi
 done
 
-for mia in lira reference shokri losstraj calibration yeom aug; do
+mias="lira reference shokri losstraj calibration yeom aug"
+# the Augmentation attack shifts images; the tabular datasets run the other 6 (as in obtain_pred.sh)
+case "$DATASETS" in purchase100|texas100) mias="${mias% aug}" ;; esac
+for mia in $mias; do
   [ -f "$out/preds_sd$seed/$DATASETS/$ARCHS/$mia/pred_$mia.npy" ] && { echo "$mia done already, skip"; continue; }
   start=$SECONDS
   MIAS="$mia" bash experiment_scripts/obtain_pred.sh "$seed"

@@ -74,3 +74,51 @@ Findings:
 | `slurm/pilot_report.sh` | Activates the venv, so `check_preds.py` prints | No |
 
 The main run (`miae_standard_exp`) reuses the pilot's CIFAR-10 data split and target model (`pilot_l40s`, same code and settings), so its seed 0 differs from the pilot's only in the loader workers.
+
+## 2026-11-10/11: stage 1 of the reduced reproduction (sciCORE, L40S)
+
+Command (from `code/experiment/mia_comp/` on login12, code at commit `a71f521`): `bash slurm/submit_stage1.sh`, report: `bash slurm/stage_report.sh`.
+Jobs: prepare 30997054 (CIFAR-100 + CINIC-10 splits and targets), 30997055 (CIFAR-10 target at batch size 128), array 30997056_[1-9%3] (one seed set per task, at most 3 GPUs at once). All COMPLETED, 2026-11-10 18:03 to 2026-11-11 05:34. Results in `~/mia_data_NOBACKUP/miae_standard_exp` and `miae_bs128_exp`. LiRA shadow models trained with 8 loader workers.
+
+Cost: ~31.4 GPU-hours (estimate 33). With the pilot (~22.5): ~54 GPU-hours. Peak 4.4 GB RAM, 5.4 GB GPU memory, mean GPU use 34–45%.
+
+Runtime per seed set (all 7 attacks, ResNet-56, L40S):
+
+| Dataset | Seeds | Hours per seed set | vs. CIFAR-10 |
+|---|---|---|---|
+| CIFAR-10 | 0–5 | 3.17–3.34 | 1.0× |
+| CIFAR-100 | 0 | 4.58 (LiRA 166 min, aug 70, losstraj 20) | 1.4× (1.7× assumed) |
+| CINIC-10 | 0 | 3.65 (LiRA 105 min, aug 71, losstraj 22) | 1.1× |
+
+Target models (train / test accuracy, batch size 512): CIFAR-10 96% / 80% (the pilot's model, reused), CIFAR-100 96% / 47%, CINIC-10 81% / 61%. The paper reports none of these.
+
+Single-instance AUC, seed 0, against Table 1 (paper / ours):
+
+| Attack | CIFAR-10 | CIFAR-100 | CINIC-10 |
+|---|---|---|---|
+| losstraj | 0.635 / 0.648 | 0.852 / 0.856 | 0.673 / 0.645 |
+| reference | 0.608 / 0.606 | 0.813 / 0.821 | 0.615 / 0.612 |
+| lira | 0.585 / 0.583 | 0.802 / 0.811 | 0.601 / 0.598 |
+| calibration | 0.603 / 0.613 | 0.721 / 0.725 | 0.623 / 0.635 |
+
+CIFAR-10 seeds 0–5 (AUC range): losstraj 0.584–0.653, reference 0.606–0.609, lira 0.577–0.587, calibration 0.613–0.622, aug 0.570–0.587, shokri 0.568–0.575, LOSS 0.553 (deterministic). CINIC-10 losstraj is 0.028 below the paper; our CINIC-10 image subset necessarily differs from the authors' (see `prepare_cinic10.py`).
+
+**Loader-change consistency check** (`compare_preds.py`, pilot seed 0 with 0 workers against stage-1 seeds 0–5 with 8): pilot LiRA AUC 0.586 / TPR@1%FPR 0.017 lies within the seeds' 0.577–0.587 / 0.016–0.021; Reference likewise (0.607 / 0.041 against 0.606–0.609 / 0.039–0.045). The pipeline is deterministic: on seed 0, all attacks that do not use LiRA's shadow models reproduced the pilot's predictions exactly (Jaccard 1.00 of detected members, identical AUC). Overlap of LiRA's detected members between pilot and seed 0 (0.17) is the same as between different seeds (0.13–0.16). Conclusion: consistent.
+
+**Batch-size comparison** (CIFAR-10 seed 0, same split; target at 512 as in the authors' code vs. 128 as their shadow models): target 96% / 80% → 99% / 84%.
+
+| Attack | AUC 512 → 128 | TPR@1%FPR 512 → 128 |
+|---|---|---|
+| lira | 0.583 → 0.645 | 0.018 → 0.060 |
+| reference | 0.606 → 0.669 | 0.040 → 0.075 |
+| aug | 0.581 → 0.600 | 0.007 → 0.008 |
+| LOSS | 0.553 → 0.581 | 0.000 → 0.000 |
+| losstraj | 0.648 → 0.647 | 0.044 → 0.044 |
+| calibration | 0.613 → 0.615 | 0.026 → 0.027 |
+| shokri | 0.571 → 0.578 | 0.011 → 0.009 |
+
+The two shadow-model attacks that assume shadows are trained like the target (LiRA, Reference) gain ~0.06 AUC, about 6× the seed-to-seed spread; the others barely change. The paper's Table 1 values for LiRA and Reference match the 512 setting, so its attack ranking likely reflects the mismatch. One seed only.
+
+Open: losstraj on CIFAR-10 seed 3 has AUC 0.584 (other seeds 0.641–0.653), while its TPR at 1% / 0.1% FPR is normal (0.040 / 0.011). Its shadow and distilled models trained normally (same accuracies as seed 1), so the difference comes from the final attack classifier, which is not logged. Treated as instance variation; check whether it recurs in stage 2.
+
+Fixed afterwards: `slurm/stage_report.sh` summed the wrong `timings.log` columns (showed 0.00 h).
